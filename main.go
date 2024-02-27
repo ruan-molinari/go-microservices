@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-
 	"time"
 
 	"github.com/ruan-molinari/go-microservices/handlers"
@@ -14,22 +13,20 @@ import (
 
 func main() {
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
-	hh := handlers.NewHello(l)
-	gh := handlers.NewGoodbye(l)
+	ph := handlers.NewProduct(l)
 
 	sm := http.NewServeMux()
-	sm.Handle("/", hh)
-	sm.Handle("/goodbye", gh)
+	sm.Handle("/", ph)
 
 	s := &http.Server{
-		Addr: ":55",
-		Handler: sm,
-		IdleTimeout: 120*time.Second,
-		ReadTimeout: 5*time.Second,
-		WriteTimeout: 5*time.Second,
+		Addr:         ":55",
+		Handler:      sm,
+		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
 	}
 
-	go func () {
+	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
 			l.Fatal(err)
@@ -40,9 +37,9 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
 
-	sig := <- sigChan
+	sig := <-sigChan
 	l.Println("Received terminate message, shutting down", sig)
 
-	tc, _ := context.WithTimeout(context.Background(), 30 * time.Second)
+	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	s.Shutdown(tc)
 }
