@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"time"
+
+	"github.com/go-playground/validator"
 )
 
 type Product struct {
 	ID          int       `json:"id"`
-	Name        string    `json:"name"`
+	Name        string    `json:"name" validate:"min=3,max=24"`
 	Description string    `json:"description"`
-	Price       float32   `json:"price"`
-	SKU         string    `json:"sku"`
+	Price       float32   `json:"price" validate:"gt=0"`
+	SKU         string    `json:"sku" validate:"required,sku"`
 	CreatedOn   time.Time `json:"-"`
 	UpdatedOn   time.Time `json:"-"`
 	DeletedOn   time.Time `json:"-"`
@@ -24,7 +27,25 @@ func (p *Product) FromJSON(r io.Reader) error {
 	return e.Decode(p)
 }
 
-// Making a type for product arrays to implement functions
+func (p *Product) Validate() error {
+	validate := validator.New()
+	err := validate.RegisterValidation("sku", validateSKU)
+	if err != nil {
+		return err
+	}
+
+	return validate.Struct(p)
+}
+
+func validateSKU(fl validator.FieldLevel) bool {
+	// SKU is of format nono-nono-nono
+	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
+	matches := re.FindAllString(fl.Field().String(), -1)
+
+	return len(matches) == 1
+}
+
+// `Products` is a collection of `Product`
 type Products []*Product
 
 // Converts an object of type []*Product to JSON
