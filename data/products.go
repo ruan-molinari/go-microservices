@@ -1,16 +1,16 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"regexp"
 	"time"
-
-	"github.com/go-playground/validator"
 )
 
+// swagger:model
 type Product struct {
+	// The id for this Product
+	//
+	// required: true
+	// min: 1
 	ID          int       `json:"id"`
 	Name        string    `json:"name" validate:"min=3,max=24"`
 	Description string    `json:"description"`
@@ -21,41 +21,21 @@ type Product struct {
 	DeletedOn   time.Time `json:"-"`
 }
 
-// Decodes a JSON to product
-func (p *Product) FromJSON(r io.Reader) error {
-	e := json.NewDecoder(r)
-	return e.Decode(p)
-}
-
-func (p *Product) Validate() error {
-	validate := validator.New()
-	err := validate.RegisterValidation("sku", validateSKU)
-	if err != nil {
-		return err
-	}
-
-	return validate.Struct(p)
-}
-
-func validateSKU(fl validator.FieldLevel) bool {
-	// SKU is of format nono-nono-nono
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-	matches := re.FindAllString(fl.Field().String(), -1)
-
-	return len(matches) == 1
-}
-
 // `Products` is a collection of `Product`
 type Products []*Product
 
-// Converts an object of type []*Product to JSON
-func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(p)
-}
-
 func GetProducts() Products {
 	return productList
+}
+
+func GetProductById(id int) (*Product, error) {
+	i := findIndexByProductId(id)
+
+	if i == -1 {
+		return nil, ErrProductNotFound
+	}
+
+	return productList[i], nil
 }
 
 func AddProduct(p *Product) {
@@ -63,14 +43,24 @@ func AddProduct(p *Product) {
 	productList = append(productList, p)
 }
 
-func UpdateProduct(id int, p *Product) error {
-	_, pos, err := findProduct(id)
-	if err != nil {
-		return err
+func UpdateProduct(p Product) error {
+	i := findIndexByProductId(p.ID)
+
+	if i == -1 {
+		return ErrProductNotFound
+	}
+	productList[i] = &p
+
+	return nil
+}
+
+func DeleteProduct(id int) error {
+	i := findIndexByProductId(id)
+	if i == -1 {
+		return ErrProductNotFound
 	}
 
-	p.ID = id
-	productList[pos] = p
+	productList = append(productList[:i], productList[i:]...)
 
 	return nil
 }
@@ -82,13 +72,14 @@ func getNextId() int {
 
 var ErrProductNotFound = fmt.Errorf("Product not found")
 
-func findProduct(id int) (*Product, int, error) {
+func findIndexByProductId(id int) int {
 	for i, p := range productList {
 		if p.ID == id {
-			return p, i, nil
+			return i
 		}
 	}
-	return nil, -1, ErrProductNotFound
+
+	return -1
 }
 
 var productList = Products{
