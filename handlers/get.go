@@ -25,6 +25,15 @@ func (p *Products) ListAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route GET /products products listProduct
+// Returns a single product from the database
+//
+// responses:
+//
+//	200: productsResponse
+//	404: errorResponse
+
+// GetProducts returns the products from the data store
 func (p *Products) ListSingle(w http.ResponseWriter, r *http.Request) {
 	id := getProductID(r)
 

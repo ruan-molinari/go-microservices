@@ -2,23 +2,41 @@ package data
 
 import (
 	"fmt"
-	"time"
 )
 
+// Product defines the structure for an API product
 // swagger:model
 type Product struct {
-	// The id for this Product
+	// The id for this product
 	//
 	// required: true
 	// min: 1
-	ID          int       `json:"id"`
-	Name        string    `json:"name" validate:"min=3,max=24"`
-	Description string    `json:"description"`
-	Price       float32   `json:"price" validate:"gt=0"`
-	SKU         string    `json:"sku" validate:"required,sku"`
-	CreatedOn   time.Time `json:"-"`
-	UpdatedOn   time.Time `json:"-"`
-	DeletedOn   time.Time `json:"-"`
+	ID int `json:"id"`
+
+	// The name ot the product
+	//
+	// required: true
+	// min: 3
+	// max: 255
+	Name string `json:"name" validate:"required,min=3,max=255"`
+
+	// The description of the product
+	//
+	// required: false
+	// max length: 10000
+	Description string `json:"description" validate:"max=10000"`
+
+	// The price of the product
+	//
+	// required: true
+	// min: 0.1
+	Price float32 `json:"price" validate:"required,gt=0"`
+
+	// The SKU for the product
+	//
+	// required: true
+	// pattern: [a-z]+-[a-z]+-[a-z]+
+	SKU string `json:"sku" validate:"required,sku"`
 }
 
 // `Products` is a collection of `Product`
@@ -70,6 +88,7 @@ func getNextId() int {
 	return lp.ID + 1
 }
 
+// ErrProductNotFound is an error raised when a product can not be found in the database
 var ErrProductNotFound = fmt.Errorf("Product not found")
 
 func findIndexByProductId(id int) int {
@@ -89,8 +108,6 @@ var productList = Products{
 		Description: "Frothy milky coffee",
 		Price:       2.45,
 		SKU:         "abc323",
-		CreatedOn:   time.Now(),
-		UpdatedOn:   time.Now(),
 	},
 	{
 		ID:          2,
@@ -98,7 +115,5 @@ var productList = Products{
 		Description: "Short and strong coffee without milk",
 		Price:       1.99,
 		SKU:         "frd32",
-		CreatedOn:   time.Now(),
-		UpdatedOn:   time.Now(),
 	},
 }

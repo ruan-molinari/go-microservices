@@ -7,6 +7,7 @@ import (
 	"github.com/ruan-molinari/go-microservices/data"
 )
 
+// MiddewareValidateFroduct validates the product in the request and calls next if ok
 func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		prod := data.Product{}

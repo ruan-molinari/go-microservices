@@ -23,31 +23,16 @@ import (
 	"github.com/ruan-molinari/go-microservices/data"
 )
 
-// A list of products returns in the response
-// swagger:response productsResponse
-type productsResponseWrapper struct {
-	// All products in the system
-	// in: body
-	Body []data.Product
-}
+// KeyProduct is a key used for the Product object in the context
+type KeyProduct struct{}
 
-// swagger:parameters deleteProduct
-type productIDParameterWrapper struct {
-	// The id of the product to delete from database
-	// in: path
-	// required: true
-	ID int `json:"id"`
-}
-
-// Request's response is empty
-// swagger:response noContent
-type producsNoContent struct{}
-
+// Product handler for getting and updating products
 type Products struct {
 	l *log.Logger
 	v *data.Validation
 }
 
+// Creates and returns a new products handler
 func NewProducts(l *log.Logger, v *data.Validation) *Products {
 	return &Products{l, v}
 }
@@ -61,8 +46,6 @@ type GenericError struct {
 type ValidationError struct {
 	Messages []string `json:"messages"`
 }
-
-type KeyProduct struct{}
 
 // getProductID returns the product ID from the URL
 // Panics if cannot convert the id into an integer

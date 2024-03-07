@@ -14,6 +14,10 @@ import (
 // responses:
 //
 //	201: noContent
+//	404: errorResponse
+//	501: errorResponse
+
+// Deletes a product from the database
 func (p *Products) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
